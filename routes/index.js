@@ -3,7 +3,7 @@ var express = require('express');
 var router = express.Router();
 var pg = require('pg');
 var jsonFormatter = require('../lib/jsonFormatter.js')
-var conString = process.env.DATABASE_URL || "postgres://@localhost/memoriesapp"
+var conString = process.env.DATABASE_URL
 
 
 /* GET users listing. */
@@ -14,7 +14,7 @@ router.post('/api/v1/memories', function(req, res, next) {
     }
     client.query('INSERT into memories(old_days, these_days, year) VALUES($1,$2,$3) RETURNING id;', [req.body.data.attributes.old_days, req.body.data.attributes.these_days, req.body.data.attributes.year], function(err, result) {
       done();
-      res.json(result.rows)
+      res.json(result)
       if (err) {
         return console.error('error running query', err);
       }
@@ -30,7 +30,9 @@ router.get('/api/v1/memories', function(req, res, next) {
     }
     client.query('select * from memories;', function(err, result) {
       done();
-      res.json(result.rows)
+      
+
+      res.status(200).json(jsonFormatter.formatResponse(result))
       if (err) {
         return console.error('error running query', err);
       }
@@ -47,7 +49,7 @@ router.get('/api/v1/memories/years', function(req, res, next) {
     }
     client.query('select distinct year from memories;', function(err, result) {
       done();
-        res.json(result.rows)
+      res.status(200).json(jsonFormatter.formatYears(result.rows));
       if (err) {
         return console.error('error running query', err);
       }
@@ -63,7 +65,7 @@ router.get('/api/v1/memories/:year', function(req, res, next) {
     }
     client.query('SELECT * FROM memories WHERE year = ($1)', [req.params.year], function(err, result) {
       done();
-      res.json(result.rows)
+      res.status(200).json(jsonFormatter.formatResponse(result));
       if (err) {
         return console.error('error running query', err);
       }
@@ -72,8 +74,7 @@ router.get('/api/v1/memories/:year', function(req, res, next) {
   });
 });
 
-      // res.json(jsonFormatter.formatYears(result.rows));
-      // res.json(jsonFormatter.formatResponse(result.row));
+      // res.json(result.rows)
        
 
 module.exports = router;
