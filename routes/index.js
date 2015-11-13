@@ -1,7 +1,9 @@
+require('dotenv').load()
 var express = require('express');
 var router = express.Router();
 var pg = require('pg');
-var conString = process.env.DATABASE_URL;
+var jsonFormatter = require('../lib/jsonFormatter.js')
+var conString = process.env.DATABASE_URL || "postgres://@localhost/memoriesapp"
 
 
 /* GET users listing. */
@@ -37,14 +39,15 @@ router.get('/api/v1/memories', function(req, res, next) {
   });
 });
 
-router.get('/api/v1/memories/:year', function(req, res, next) {
+
+router.get('/api/v1/memories/years', function(req, res, next) {
   pg.connect(conString, function(err, client, done) {
     if (err) {
       return console.error('error fetching client from pool', err);
     }
-    client.query('SELECT * FROM memories WHERE year = $1', [req.params.year], function(err, result) {
+    client.query('select distinct year from memories;', function(err, result) {
       done();
-      res.status(200).json(helper.formatResponse(result));
+        res.json(result.rows)
       if (err) {
         return console.error('error running query', err);
       }
@@ -53,12 +56,12 @@ router.get('/api/v1/memories/:year', function(req, res, next) {
   });
 });
 
-router.get('/api/v1/memories/years', function(req, res, next) {
+router.get('/api/v1/memories/:year', function(req, res, next) {
   pg.connect(conString, function(err, client, done) {
     if (err) {
       return console.error('error fetching client from pool', err);
     }
-    client.query('select year from memories;', function(err, result) {
+    client.query('SELECT * FROM memories WHERE year = ($1)', [req.params.year], function(err, result) {
       done();
       res.json(result.rows)
       if (err) {
@@ -69,6 +72,8 @@ router.get('/api/v1/memories/years', function(req, res, next) {
   });
 });
 
-
+      // res.json(jsonFormatter.formatYears(result.rows));
+      // res.json(jsonFormatter.formatResponse(result.row));
+       
 
 module.exports = router;

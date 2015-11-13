@@ -4,12 +4,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var cors = require('cors');
 require('dotenv').load({silent: true})
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
+app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -25,6 +27,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
+
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+ 
+// app.get('http://g12-Paul-Siskind-memories.cfapps.io/api/v1/memories', function(req, res, next){
+//   res.json({msg: 'This is CORS-enabled for all origins!'});
+// });
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
