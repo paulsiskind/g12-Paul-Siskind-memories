@@ -2,7 +2,6 @@ require('dotenv').load()
 var express = require('express');
 var router = express.Router();
 var pg = require('pg');
-var jsonFormatter = require('../lib/jsonFormatter.js')
 var conString = process.env.DATABASE_URL
 
 
@@ -32,7 +31,7 @@ router.get('/api/v1/memories', function(req, res, next) {
       done();
       
 
-      res.status(200).json(jsonFormatter.formatResponse(result))
+      res.json(result.rows)
       if (err) {
         return console.error('error running query', err);
       }
@@ -49,7 +48,8 @@ router.get('/api/v1/memories/years', function(req, res, next) {
     }
     client.query('select distinct year from memories;', function(err, result) {
       done();
-      res.status(200).json(jsonFormatter.formatYears(result.rows));
+      res.json(result.rows)
+
       if (err) {
         return console.error('error running query', err);
       }
@@ -65,7 +65,8 @@ router.get('/api/v1/memories/:year', function(req, res, next) {
     }
     client.query('SELECT * FROM memories WHERE year = ($1)', [req.params.year], function(err, result) {
       done();
-      res.status(200).json(jsonFormatter.formatResponse(result));
+      res.json(result.rows)
+
       if (err) {
         return console.error('error running query', err);
       }
